@@ -1,4 +1,4 @@
-import { Scenario, GameState, DispatchResult } from "@coc/types"
+import type { Scenario, GameState, DispatchResult } from "@coc/types"
 import { createInitialState } from "./state"
 import { resolveAction } from "./systems/narrative/narrative.system"
 
@@ -33,9 +33,10 @@ export class GameEngine {
 
         return {
             id: scene.id,
+            text: scene.text,
             actions: scene.actions.map(a => ({
                 id: a.id,
-                label: a.id
+                label: a.label ?? a.id
             }))
         }
     }

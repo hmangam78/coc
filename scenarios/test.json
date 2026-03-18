@@ -66,9 +66,12 @@
   "scenes": [
     {
       "id": "start",
+      "text": "La casa abandonada se alza ante ti. El aire huele a humedad y a madera vieja.",
       "actions": [
         {
           "id": "enter_house",
+          "label": "Entrar en la casa",
+          "text": "Empujas la puerta con cuidado. Un silencio denso te devuelve la mirada.",
           "next": [
             { "sceneId": "foyer" }
           ]
@@ -77,30 +80,52 @@
     },
     {
       "id": "foyer",
+      "text": "El recibidor está cubierto de polvo. Un abrigo cuelga de un perchero torcido. Hay una puerta entreabierta al fondo.",
       "actions": [
         {
           "id": "listen_at_door",
+          "label": "Escuchar tras la puerta",
           "skillCheck": { "skill": "listen", "difficulty": "normal" },
           "next": [
-            { "condition": { "type": "roll_success" }, "sceneId": "study" },
-            { "condition": { "type": "roll_failure" }, "sceneId": "cellar" }
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "study",
+              "text": "Apenas un susurro... pero estás seguro: hay alguien respirando al otro lado."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "cellar",
+              "text": "Acercas el oído, pero tu propia respiración te traiciona. De pronto, la casa cruje bajo tus pies."
+            }
           ]
         },
         {
           "id": "search_coat",
+          "label": "Registrar el abrigo",
           "skillCheck": { "skill": "spot_hidden", "difficulty": "normal" },
           "next": [
-            { "condition": { "type": "roll_success" }, "sceneId": "key_found" },
-            { "condition": { "type": "roll_failure" }, "sceneId": "study" }
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "key_found",
+              "text": "Tus dedos encuentran metal frío: una llave oxidada atrapada en el forro."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "study",
+              "text": "Solo polvo, pelusas y un olor rancio. Nada útil."
+            }
           ]
         }
       ]
     },
     {
       "id": "key_found",
+      "text": "La llave pesa más de lo que esperabas. Está cubierta de óxido, pero parece resistente.",
       "actions": [
         {
           "id": "take_rusty_key",
+          "label": "Coger la llave",
+          "text": "Te guardas la llave. Por un instante, juras oír un suspiro lejano.",
           "effects": [{ "type": "add_flag", "flag": "found_key" }],
           "next": [{ "sceneId": "study" }]
         }
@@ -108,58 +133,102 @@
     },
     {
       "id": "study",
+      "text": "El despacho huele a tinta seca. Un diario abierto reposa sobre el escritorio. En una esquina, una trampilla marca el suelo.",
       "actions": [
         {
           "id": "unlock_trapdoor",
+          "label": "Probar la llave en la trampilla",
           "next": [
             {
               "condition": { "type": "flag", "flag": "found_key", "value": true },
-              "sceneId": "cellar"
+              "sceneId": "cellar",
+              "text": "La cerradura cede con un chasquido. La trampilla se abre revelando una oscuridad húmeda."
             },
-            { "sceneId": "trapdoor_locked" }
+            {
+              "sceneId": "trapdoor_locked",
+              "text": "No tienes la llave adecuada. La cerradura se ríe de ti con un clic seco."
+            }
           ]
         },
         {
           "id": "skim_diary",
+          "label": "Ojear el diario",
           "skillCheck": { "skill": "occult", "difficulty": "normal" },
           "next": [
-            { "condition": { "type": "roll_success" }, "sceneId": "cellar" },
-            { "condition": { "type": "roll_failure" }, "sceneId": "trapdoor_locked" }
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "cellar",
+              "text": "Entre símbolos y garabatos, una frase destaca: “Bajo la casa, la verdad susurra”."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "trapdoor_locked",
+              "text": "Las palabras se retuercen en tu mente. Te cuesta concentrarte."
+            }
           ]
         }
       ]
     },
     {
       "id": "trapdoor_locked",
+      "text": "La trampilla no cede. El aire del despacho se vuelve extrañamente pesado.",
       "actions": [
         {
           "id": "force_trapdoor",
+          "label": "Forzar la trampilla",
           "skillCheck": { "skill": "str", "difficulty": "hard" },
           "next": [
-            { "condition": { "type": "roll_success" }, "sceneId": "cellar" },
-            { "condition": { "type": "roll_failure" }, "sceneId": "end_bad" }
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "cellar",
+              "text": "La madera gime, los clavos se quejan… y finalmente la trampilla se abre."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "end_bad",
+              "text": "Aunque intentas ser cuidadoso, una tabla suelta cruje bajo tu pie. Algo se despierta en la oscuridad."
+            }
           ]
         },
         {
           "id": "flee_house",
+          "label": "Salir corriendo",
           "next": [{ "sceneId": "end_bad" }]
         }
       ]
     },
     {
       "id": "cellar",
+      "text": "El sótano está frío. Susurros casi imperceptibles se deslizan entre las paredes como insectos.",
       "actions": [
         {
           "id": "resist_whispers",
+          "label": "Resistir los susurros",
           "skillCheck": { "skill": "pow", "difficulty": "normal" },
           "next": [
-            { "condition": { "type": "roll_success" }, "sceneId": "end_good" },
-            { "condition": { "type": "roll_failure" }, "sceneId": "end_bad" }
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "end_good",
+              "text": "Aprietas los dientes y avanzas. Los susurros retroceden, disgustados."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "end_bad",
+              "text": "Las palabras se clavan en tu mente. Por un momento, no recuerdas tu propio nombre."
+            }
           ]
         }
       ]
     },
-    { "id": "end_good", "actions": [] },
-    { "id": "end_bad", "actions": [] }
+    {
+      "id": "end_good",
+      "text": "La noche no termina bien... pero al menos hoy sigues siendo tú.",
+      "actions": []
+    },
+    {
+      "id": "end_bad",
+      "text": "La casa se queda con algo que no sabías que podías perder.",
+      "actions": []
+    }
   ]
 }

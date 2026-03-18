@@ -1,4 +1,4 @@
-import { GameState, Scenario } from "@coc/types"
+import type { GameState, Scenario } from "@coc/types"
 
 export function createInitialState(scenario: Scenario): GameState {
     const characters = Object.fromEntries(

@@ -5,6 +5,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" build && pnpm -r --filter \"./apps/**\" build",
+    "clean": "pnpm -r --filter \"./packages/**\" clean && pnpm -r --filter \"./apps/**\" clean",
+    "dev": "pnpm -r --filter \"./packages/**\" build && pnpm --filter backend start:dev",
+    "dev:front": "pnpm -r --filter \"./packages/**\" build && pnpm --filter frontend dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +19,9 @@
     "apps/*",
     "packages/*"
   ],
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  },
   "dependencies": {
     "socket.io-client": "^4.8.3"
   }

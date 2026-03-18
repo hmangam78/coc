@@ -1,4 +1,4 @@
-import { GameState, RollResult } from "@coc/types"
+import type { GameState, RollResult } from "@coc/types"
 
 export function resolveSkillCheck(
     state: GameState,

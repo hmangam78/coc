@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { BadRequestException } from "@nestjs/common"
-import { Scenario } from "@coc/types"
+import type { Scenario } from "@coc/types"
 import { ScenarioSchema } from "schemas"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
@@ -9,6 +9,46 @@ import { z } from "zod"
 
 @Injectable()
 export class ScenarioService {
+    async listScenarios() {
+        const dir = this.findScenarioDir()
+        if (!dir) return []
+
+        const entries = await fs.readdir(dir, { withFileTypes: true })
+        const scenarios: { id: string; valid: boolean; error?: string }[] = []
+
+        for (const entry of entries) {
+            if (!entry.isFile()) continue
+            if (!entry.name.endsWith(".json")) continue
+
+            const id = entry.name.replace(/\.json$/, "")
+            if (!isValidScenarioId(id)) continue
+
+            const filePath = path.resolve(dir, entry.name)
+            const stat = await fs.stat(filePath)
+            if (stat.size === 0) continue
+
+            try {
+                const file = await fs.readFile(filePath, "utf8")
+                const raw = JSON.parse(file) as unknown
+                const parsed = ScenarioSchema.safeParse(raw)
+                if (!parsed.success) {
+                    scenarios.push({
+                        id,
+                        valid: false,
+                        error: formatZodError(parsed.error)
+                    })
+                } else {
+                    scenarios.push({ id, valid: true })
+                }
+            } catch (err) {
+                scenarios.push({ id, valid: false, error: stringifyError(err) })
+            }
+        }
+
+        scenarios.sort((a, b) => a.id.localeCompare(b.id))
+        return scenarios
+    }
+
     async loadScenarioById(scenarioId: string): Promise<Scenario> {
         if (!isValidScenarioId(scenarioId)) {
             throw new BadRequestException(
@@ -58,6 +98,27 @@ export class ScenarioService {
         // Default to first candidate for error message
         const assumedDir = candidates[0] ?? path.resolve(process.cwd(), "scenarios")
         return path.resolve(assumedDir, scenarioFileName)
+    }
+
+    private findScenarioDir() {
+        const envDir = process.env.SCENARIOS_DIR
+        const candidates = [
+            envDir ? path.resolve(envDir) : null,
+            path.resolve(process.cwd(), "scenarios"),
+            path.resolve(process.cwd(), "..", "scenarios"),
+            path.resolve(process.cwd(), "..", "..", "scenarios")
+        ].filter(Boolean) as string[]
+
+        for (const dir of candidates) {
+            try {
+                if (fssync.existsSync(dir) && fssync.statSync(dir).isDirectory()) {
+                    return dir
+                }
+            } catch {
+                // ignore
+            }
+        }
+        return null
     }
 }
 

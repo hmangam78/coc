@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { BadRequestException } from "@nestjs/common"
 import { GameEngine } from "@coc/engine"
-import { DispatchResult, GameState } from "@coc/types"
+import type { DispatchResult, GameState } from "@coc/types"
 import { v4 as uuid } from "uuid"
 import { ScenarioService } from "../scenario/scenario.service"
 

@@ -24,6 +24,7 @@ export type GameState = {
 }
 export type SceneView = {
     id: string
+    text?: string
     actions: {
         id: string
         label: string

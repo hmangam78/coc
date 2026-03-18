@@ -1,4 +1,4 @@
-import { Condition, GameState } from "@coc/types"
+import type { Condition, GameState } from "@coc/types"
 
 export function evaluateCondition(
     condition: Condition,

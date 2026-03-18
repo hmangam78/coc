@@ -1,3 +1,9 @@
+#DOCS
+PHASE*.md
+PROJECT_REVIEW*.md
+*BUILD_PLAN.md
+
+
 # Dependencies
 node_modules/
 **/node_modules/

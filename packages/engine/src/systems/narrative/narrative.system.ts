@@ -1,4 +1,4 @@
-import { Scenario, GameState, RollResult, DispatchResult, GameEvent } from "@coc/types"
+import type { Scenario, GameState, RollResult, DispatchResult, GameEvent } from "@coc/types"
 import { applyEffect } from "../effects/effect.system"
 import { evaluateCondition } from "../condition/condition.system"
 import { resolveSkillCheck } from "../dice/dice.system"
@@ -24,6 +24,10 @@ export function resolveAction(
     if (!action) throw new Error(`Action not found: ${actionId}`)
 
     const fromSceneId = currentSceneId
+
+    if (action.text) {
+        events.push({ type: "narration", text: action.text })
+    }
 
     //Skill roll checks
     let rollResult: RollResult | undefined
@@ -73,6 +77,10 @@ export function resolveAction(
                         ...state.sceneByCharacterId,
                         [characterId]: next.sceneId
                     }
+                }
+
+                if (next.text) {
+                    events.push({ type: "narration", text: next.text })
                 }
                 break
             }

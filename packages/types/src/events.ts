@@ -16,6 +16,10 @@ export type GameEvent =
           result: RollResult
       }
     | {
+          type: "narration"
+          text: string
+      }
+    | {
           type: "effect_applied"
           effect: Effect
       }

@@ -1,14 +1,23 @@
 import { Controller, Get, Post, Body, Param } from "@nestjs/common"
 import { GameService } from "./game.service"
-import { GameState } from "@coc/types"
+import type { GameState } from "@coc/types"
+import { ScenarioService } from "../scenario/scenario.service"
 
 @Controller("game")
 export class GameController {
-    constructor(private readonly gameService: GameService) {}
+    constructor(
+        private readonly gameService: GameService,
+        private readonly scenarioService: ScenarioService
+    ) {}
 
     @Post("session")
     async createSession(@Body() body: { scenarioId?: string } = {}) {
         return { sessionId: await this.gameService.createSession(body.scenarioId) }
+    }
+
+    @Get("scenarios")
+    async listScenarios() {
+        return { scenarios: await this.scenarioService.listScenarios() }
     }
 
     @Post(":sessionId/join")
