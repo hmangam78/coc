@@ -12,7 +12,10 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "workspaces": [
-	  "apps/*",
-	  "packages/*"
-  ]
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
+  }
 }
