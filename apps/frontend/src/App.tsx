@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react"
 import { socket } from "./socket"
-import type { GameState, View } from "./types"
+import type {
+  CreateSessionResponseV1,
+  EventsEnvelopeV1,
+  JoinResponseV1,
+  ListScenariosResponseV1,
+  ScenarioListItemV1,
+  StateUpdateV1,
+  VisibleGameStateV1,
+} from "@coc/protocol"
 
 const API_BASE_URL = "http://localhost:3000"
 const LAST_SESSION_ID_KEY = "coc:lastSessionId"
-
-type ScenarioListItem = {
-  id: string
-  valid: boolean
-  error?: string
-}
 
 function tokenStorageKey(sessionId: string) {
   return `coc:playerToken:${sessionId}`
@@ -18,7 +20,7 @@ function tokenStorageKey(sessionId: string) {
 function App() {
   const [connected, setConnected] = useState<boolean>(socket.connected)
 
-  const [scenarios, setScenarios] = useState<ScenarioListItem[]>([])
+  const [scenarios, setScenarios] = useState<ScenarioListItemV1[]>([])
   const [scenariosError, setScenariosError] = useState<string | null>(null)
 
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -27,9 +29,9 @@ function App() {
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [playerToken, setPlayerToken] = useState<string | null>(null)
   const [characterId, setCharacterId] = useState<string | null>(null)
-  const [state, setState] = useState<GameState | null>(null)
-  const [view, setView] = useState<View | null>(null)
-  const [events, setEvents] = useState<any[]>([])
+  const [state, setState] = useState<VisibleGameStateV1 | null>(null)
+  const [view, setView] = useState<StateUpdateV1 | null>(null)
+  const [events, setEvents] = useState<EventsEnvelopeV1[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,14 +55,20 @@ function App() {
         const res = await fetch(`${API_BASE_URL}/game/scenarios`, {
           signal: abort.signal,
         })
-        const payload = await res.json()
+        const payload = (await res.json()) as ListScenariosResponseV1 & {
+          message?: string
+        }
         if (!res.ok) {
           throw new Error(payload?.message ?? `HTTP ${res.status}`)
         }
         setScenarios(payload?.scenarios ?? [])
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (abort.signal.aborted) return
-        setScenariosError(err?.message ?? String(err))
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : String(err)
+        setScenariosError(message)
       }
     })()
 
@@ -71,16 +79,20 @@ function App() {
   useEffect(() => {
     const onConnect = () => setConnected(true)
     const onDisconnect = () => setConnected(false)
-    const onStateUpdate = (newView: View) => {
+    const onStateUpdate = (newView: StateUpdateV1) => {
       setView(newView)
       setState(newView.state)
       setBusy(false)
     }
-    const onEvents = (payload: any) => {
+    const onEvents = (payload: EventsEnvelopeV1) => {
       setEvents((prev) => [payload, ...prev].slice(0, 50))
     }
-    const onConnectError = (err: any) => {
-      setError(err?.message ?? String(err))
+    const onConnectError = (err: unknown) => {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : String(err)
+      setError(message)
       setBusy(false)
     }
 
@@ -116,9 +128,13 @@ function App() {
       .emit(
         "join",
         { sessionId: targetSessionId, playerToken: storedToken ?? undefined },
-        (err: any, response: any) => {
+        (err: unknown, response: JoinResponseV1) => {
           if (err) {
-            setError(err?.message ?? String(err))
+            const message =
+              err && typeof err === "object" && "message" in err
+                ? String((err as { message: unknown }).message)
+                : String(err)
+            setError(message)
             setBusy(false)
             return
           }
@@ -131,7 +147,7 @@ function App() {
           setPlayerToken(response.playerToken)
           setCharacterId(response.characterId)
           setState(response.state)
-          setView(response)
+          setView({ scene: response.scene, state: response.state })
 
           if (response?.playerToken) {
             localStorage.setItem(
@@ -161,7 +177,9 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenarioId }),
       })
-      const payload = await res.json()
+      const payload = (await res.json()) as CreateSessionResponseV1 & {
+        message?: string
+      }
       if (!res.ok) {
         throw new Error(payload?.message ?? `HTTP ${res.status}`)
       }
@@ -174,8 +192,12 @@ function App() {
       setManualSessionId(newSessionId)
 
       doJoin(newSessionId)
-    } catch (err: any) {
-      setError(err?.message ?? String(err))
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : String(err)
+      setError(message)
       setBusy(false)
     }
   }

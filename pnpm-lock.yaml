@@ -21,6 +21,9 @@ importers:
       '@coc/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@coc/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
       '@coc/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -140,6 +143,9 @@ importers:
         specifier: ^4.8.3
         version: 4.8.3
     devDependencies:
+      '@coc/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
       '@eslint/js':
         specifier: ^9.39.4
         version: 9.39.4
@@ -189,6 +195,12 @@ importers:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
+
+  packages/protocol:
+    dependencies:
+      '@coc/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/schemas:
     dependencies:

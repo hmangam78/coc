@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { BadRequestException } from "@nestjs/common"
 import { GameEngine } from "@coc/engine"
 import type { DispatchResult, GameState } from "@coc/types"
+import type { StateUpdateV1, VisibleGameStateV1 } from "@coc/protocol"
 import { v4 as uuid } from "uuid"
 import { ScenarioService } from "../scenario/scenario.service"
 
@@ -22,11 +23,13 @@ type Session = {
     playerIdByToken: Map<string, string>
     createdAt: number
     lastActivityAt: number
+    eventSeq: number
 }
 
 type DispatchWithActor = DispatchResult & {
     playerId: string
     characterId: string
+    seq: number
 }
 
 @Injectable()
@@ -60,7 +63,8 @@ export class GameService {
             players: new Map(),
             playerIdByToken: new Map(),
             createdAt: Date.now(),
-            lastActivityAt: Date.now()
+            lastActivityAt: Date.now(),
+            eventSeq: 0
         }
 
         this.sessions.set(sessionId, session)
@@ -196,11 +200,13 @@ export class GameService {
         player.lastSeenAt = Date.now()
 
         const result = session.engine.dispatch(actionId, player.characterId)
+        const seq = ++session.eventSeq
 
         return {
             ...result,
             playerId,
-            characterId: player.characterId
+            characterId: player.characterId,
+            seq
         }
     }
 
@@ -225,7 +231,7 @@ export class GameService {
         this.socketIndex.delete(socketId)
     }
 
-    getViewForPlayer(sessionId: string, playerId: string) {
+    getViewForPlayer(sessionId: string, playerId: string): StateUpdateV1 {
         const session = this.sessions.get(sessionId)
         if (!session) throw new BadRequestException("Session not found")
 
@@ -242,7 +248,7 @@ export class GameService {
 
         const lastRoll = state.lastRollByCharacterId[player.characterId]
 
-        const visibleState = {
+        const visibleState: VisibleGameStateV1 = {
             sceneId,
             flags: state.flags,
             character: state.characters[player.characterId],

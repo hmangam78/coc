@@ -8,6 +8,15 @@ import {
 } from "@nestjs/websockets"
 import { Server, Socket } from "socket.io"
 import { GameService } from "./game.service"
+import type {
+    ActionRequestV1,
+    ActionAckV2,
+    EventsEnvelopeV1,
+    JoinRequestV1,
+    JoinResponseV1,
+    StateUpdateV1
+} from "@coc/protocol"
+import { parseWs, ActionRequestSchema, JoinRequestSchema } from "./game.validation"
 
 @WebSocketGateway({
     cors: {
@@ -23,17 +32,18 @@ export class GameGateway implements OnGatewayDisconnect {
     //Join session
     @SubscribeMessage("join")
     handleJoin(
-        @MessageBody() data: { sessionId: string; playerToken?: string },
+        @MessageBody() data: JoinRequestV1,
         @ConnectedSocket() client: Socket
-    ) {
-        const { sessionId } = data
+    ): JoinResponseV1 {
+        const parsed = parseWs(JoinRequestSchema, data)
+        const { sessionId } = parsed
 
-        const result = this.gameService.joinSession(sessionId, client.id, data.playerToken)
+        const result = this.gameService.joinSession(sessionId, client.id, parsed.playerToken)
 
         client.join(sessionId)
         client.join(this.gameService.getPlayerRoom(sessionId, result.playerId))
 
-        const view = this.gameService.getViewForPlayer(sessionId, result.playerId)
+        const view: StateUpdateV1 = this.gameService.getViewForPlayer(sessionId, result.playerId)
 
         return {
             ...result,
@@ -44,31 +54,35 @@ export class GameGateway implements OnGatewayDisconnect {
     //Player action
     @SubscribeMessage("action")
     handleAction(
-        @MessageBody() data: { sessionId: string; actionId: string; playerToken: string },
+        @MessageBody() data: ActionRequestV1,
         @ConnectedSocket() client: Socket
-    ) {
-        const { sessionId, actionId, playerToken } = data
+    ): ActionAckV2 {
+        const parsed = parseWs(ActionRequestSchema, data)
+        const { sessionId, actionId, playerToken } = parsed
     
         const result = this.gameService.dispatchByToken(sessionId, playerToken, actionId)
     
         //Domain events (separate channel)
+        const eventsEnvelope: EventsEnvelopeV1 = {
+            playerId: result.playerId,
+            characterId: result.characterId,
+            events: result.events,
+            ts: Date.now(),
+            seq: result.seq
+        }
         this.server
             .to(this.gameService.getPlayerRoom(sessionId, result.playerId))
-            .emit("events", {
-                playerId: result.playerId,
-                characterId: result.characterId,
-                events: result.events
-            })
+            .emit("events", eventsEnvelope)
 
         //Broadcast filtered view per player
         for (const playerId of this.gameService.getSessionPlayerIds(sessionId)) {
-            const view = this.gameService.getViewForPlayer(sessionId, playerId)
+            const view: StateUpdateV1 = this.gameService.getViewForPlayer(sessionId, playerId)
             this.server
                 .to(this.gameService.getPlayerRoom(sessionId, playerId))
                 .emit("state_update", view)
         }
     
-        return result.state
+        return { accepted: true }
     }
 
     handleDisconnect(client: Socket) {
