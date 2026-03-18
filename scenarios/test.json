@@ -1,0 +1,29 @@
+{
+    "scenes": [
+        {
+            "id": "start",
+            "actions": [
+                {
+                    "id": "inspect",
+                    "effects": [
+                        { "type": "add_flag", "flag": "found" }
+                    ],
+                    "next": [
+                        {
+                            "condition": {
+                                "type": "flag",
+                                "flag": "found",
+                                "value": true
+                            },
+                            "sceneId": "next"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "next",
+            "actions": []
+        }
+    ]
+}
