@@ -1,8 +1,9 @@
 {
-  "name": "engine",
+  "name": "@coc/engine",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

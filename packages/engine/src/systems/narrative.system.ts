@@ -15,16 +15,23 @@ export function resolveAction(
 
     const action = scene.actions.find(a => a.id === actionId)
 
-    if (!action) throw new Error("Action not found")
+    if (!action) throw new Error("Action not found ${actionId}")
     
     // Apply effects
-    action.effects?.forEach(effect => applyEffect(effect, state))
+    if (action.effects) {
+        for (const effect of action.effects) {
+            state = applyEffect(effect, state)
+        }
+    }
 
     // Resolve transition
     if (action.next) {
         for (const next of action.next) {
             if (!next.condition || evaluateCondition(next.condition, state)) {
-                state.currentSceneId = next.sceneId
+                state = {
+                    ...state,
+                    currentSceneId: next.sceneId
+                }
                 break
             }
         }

@@ -10,6 +10,12 @@ importers:
 
   apps/backend:
     dependencies:
+      '@coc/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@coc/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.17(reflect-metadata@0.2.2)(rxjs@7.8.2)
