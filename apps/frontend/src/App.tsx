@@ -1,120 +1,104 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react"
+import { socket } from "./socket"
+import type { GameState, View } from "./types"
+
+const SESSION_ID = "00e8877f-bc5e-4b45-b7f8-094d1e107ee4"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [playerId, setPlayerId] = useState<string | null>(null)
+  const [playerToken, setPlayerToken] = useState<string | null>(null)
+  const [characterId, setCharacterId] = useState<string | null>(null)
+  const [state, setState] = useState<GameState | null>(null)
+  const [view, setView] = useState<View | null>(null)
+
+  // 🔹 conectar y hacer join
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected")
+
+      socket.emit("join", { sessionId: SESSION_ID }, (response: any) => {
+        console.log("JOIN RESPONSE", response)
+
+        setPlayerId(response.playerId)
+        setPlayerToken(response.playerToken)
+        setCharacterId(response.characterId)
+        setState(response.state)
+        setView(response)
+      })
+    })
+
+    socket.on("state_update", (newView) => {
+      setView(newView)
+      setState(newView.state)
+    })
+
+    return () => {
+      socket.off("connect")
+      socket.off("state_update")
+    }
+  }, [])
+
+  // 🔹 ejecutar acción
+  const handleAction = (actionId: string) => {
+    if (!playerToken) return
+
+    socket.emit("action", {
+      sessionId: SESSION_ID,
+      actionId,
+      playerToken
+    })
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div style={{ padding: 20 }}>
+      <h1>Call of Cthulhu - Test UI</h1>
+
+      <div>
+        <strong>Player:</strong> {playerId}
+      </div>
+      <div>
+        <strong>Token:</strong> {playerToken}
+      </div>
+
+      <div>
+        <strong>Character:</strong> {characterId}
+      </div>
+
+      <hr />
+
+      <h2>Estado</h2>
+
+      <pre>{JSON.stringify(state, null, 2)}</pre>
+
+      <hr />
+
+      <h2>Escena: {view?.scene.id}</h2>
+
+      <h3>Acciones</h3>
+
+      {view?.scene.actions.map(action => (
         <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          key={action.id}
+          onClick={() => handleAction(action.id)}
         >
-          Count is {count}
+          {action.label}
         </button>
-      </section>
+      ))}
 
-      <div className="ticks"></div>
+      <h2>Última tirada</h2>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {state?.lastRoll && (
+        <div>
+          <div>Roll: {state.lastRoll.roll}</div>
+          <div>Skill: {state.lastRoll.skill}</div>
+          <div>Threshold: {state.lastRoll.threshold}</div>
+          <div>
+            Result:{" "}
+            {state.lastRoll.success ? "SUCCESS" : "FAILURE"}
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </div>
   )
 }
 

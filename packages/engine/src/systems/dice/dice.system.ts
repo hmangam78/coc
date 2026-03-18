@@ -13,7 +13,7 @@ export function resolveSkillCheck(
         throw new Error(`Character not found ${characterId}`)
     }
 
-    const skillValue = character.skills[skill] ?? 0
+    const skillValue = character.skills[skill] ?? character.attributes?.[skill] ?? 0
 
     let threshold = skillValue
 

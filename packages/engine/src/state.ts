@@ -5,9 +5,19 @@ export function createInitialState(scenario: Scenario): GameState {
         scenario.characters.map((c) => [c.id, c])
     )
 
+    const initialSceneId = scenario.scenes[0]?.id
+    if (!initialSceneId) {
+        throw new Error("Scenario has no scenes")
+    }
+
+    const sceneByCharacterId = Object.fromEntries(
+        scenario.characters.map((c) => [c.id, initialSceneId])
+    )
+
     return {
-        currentSceneId: scenario.scenes[0].id,
+        sceneByCharacterId,
         flags: {},
-        characters
+        characters,
+        lastRollByCharacterId: {}
     }
 }

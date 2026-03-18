@@ -1,81 +1,165 @@
 {
-    "characters": [
+  "characters": [
     {
       "id": "investigator_1",
       "name": "Detective Ruiz",
+      "attributes": {
+        "str": 55,
+        "con": 50,
+        "siz": 60,
+        "dex": 65,
+        "app": 45,
+        "int": 70,
+        "pow": 60,
+        "edu": 75,
+        "luck": 40,
+        "hp": 11,
+        "mp": 12,
+        "san": 60
+      },
       "skills": {
+        "accounting": 10,
+        "anthropology": 1,
+        "appraise": 5,
+        "archaeology": 1,
+        "art_craft": 5,
+        "charm": 15,
+        "climb": 20,
+        "credit_rating": 30,
+        "cthulhu_mythos": 0,
+        "disguise": 5,
+        "dodge": 35,
+        "drive_auto": 20,
+        "electrical_repair": 10,
+        "fast_talk": 10,
+        "fighting_brawl": 40,
+        "firearms_handgun": 45,
+        "firearms_rifle": 25,
+        "first_aid": 30,
+        "history": 20,
+        "intimidate": 25,
+        "jump": 20,
+        "language_own": 60,
+        "language_other": 20,
+        "law": 35,
+        "library_use": 50,
+        "listen": 55,
+        "locksmith": 20,
+        "mechanical_repair": 10,
+        "medicine": 5,
+        "natural_world": 10,
+        "navigate": 10,
+        "occult": 25,
+        "persuade": 30,
+        "psychology": 40,
+        "psychoanalysis": 1,
+        "sleight_of_hand": 10,
         "spot_hidden": 60,
-        "psychology": 40
-      }
-    },
-    {
-      "id": "investigator_2",
-      "name": "Dr. Alvarez",
-      "skills": {
-        "spot_hidden": 30,
-        "psychology": 70
+        "stealth": 40,
+        "survival": 10,
+        "swim": 20,
+        "throw": 20,
+        "track": 25
       }
     }
-    ],
-    "scenes": [
+  ],
+  "scenes": [
+    {
+      "id": "start",
+      "actions": [
         {
-        "id": "start",
-        "actions": [
-            {
-            "id": "inspect_room",
-            "skillCheck": {
-                "skill": "spot_hidden",
-                "difficulty": "normal"
-            },
-            "next": [
-                {
-                "condition": { "type": "roll_success" },
-                "sceneId": "clue_found"
-                },
-                {
-                "condition": { "type": "roll_failure" },
-                "sceneId": "nothing_found"
-                }
-            ]
-            }
-        ]
-        },
-        {
-        "id": "clue_found",
-        "actions": [
-            {
-            "id": "take_clue",
-            "effects": [
-                { "type": "add_flag", "flag": "has_clue" }
-            ],
-            "next": [
-                {
-                "condition": {
-                    "type": "has_flag",
-                    "flag": "has_clue"
-                },
-                "sceneId": "end_good"
-                }
-            ]
-            }
-        ]
-        },
-        {
-        "id": "nothing_found",
-        "actions": [
-            {
-            "id": "retry",
-            "next": [
-                {
-                "sceneId": "start"
-                }
-            ]
-            }
-        ]
-        },
-        {
-        "id": "end_good",
-        "actions": []
+          "id": "enter_house",
+          "next": [
+            { "sceneId": "foyer" }
+          ]
         }
-    ]
+      ]
+    },
+    {
+      "id": "foyer",
+      "actions": [
+        {
+          "id": "listen_at_door",
+          "skillCheck": { "skill": "listen", "difficulty": "normal" },
+          "next": [
+            { "condition": { "type": "roll_success" }, "sceneId": "study" },
+            { "condition": { "type": "roll_failure" }, "sceneId": "cellar" }
+          ]
+        },
+        {
+          "id": "search_coat",
+          "skillCheck": { "skill": "spot_hidden", "difficulty": "normal" },
+          "next": [
+            { "condition": { "type": "roll_success" }, "sceneId": "key_found" },
+            { "condition": { "type": "roll_failure" }, "sceneId": "study" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "key_found",
+      "actions": [
+        {
+          "id": "take_rusty_key",
+          "effects": [{ "type": "add_flag", "flag": "found_key" }],
+          "next": [{ "sceneId": "study" }]
+        }
+      ]
+    },
+    {
+      "id": "study",
+      "actions": [
+        {
+          "id": "unlock_trapdoor",
+          "next": [
+            {
+              "condition": { "type": "flag", "flag": "found_key", "value": true },
+              "sceneId": "cellar"
+            },
+            { "sceneId": "trapdoor_locked" }
+          ]
+        },
+        {
+          "id": "skim_diary",
+          "skillCheck": { "skill": "occult", "difficulty": "normal" },
+          "next": [
+            { "condition": { "type": "roll_success" }, "sceneId": "cellar" },
+            { "condition": { "type": "roll_failure" }, "sceneId": "trapdoor_locked" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trapdoor_locked",
+      "actions": [
+        {
+          "id": "force_trapdoor",
+          "skillCheck": { "skill": "str", "difficulty": "hard" },
+          "next": [
+            { "condition": { "type": "roll_success" }, "sceneId": "cellar" },
+            { "condition": { "type": "roll_failure" }, "sceneId": "end_bad" }
+          ]
+        },
+        {
+          "id": "flee_house",
+          "next": [{ "sceneId": "end_bad" }]
+        }
+      ]
+    },
+    {
+      "id": "cellar",
+      "actions": [
+        {
+          "id": "resist_whispers",
+          "skillCheck": { "skill": "pow", "difficulty": "normal" },
+          "next": [
+            { "condition": { "type": "roll_success" }, "sceneId": "end_good" },
+            { "condition": { "type": "roll_failure" }, "sceneId": "end_bad" }
+          ]
+        }
+      ]
+    },
+    { "id": "end_good", "actions": [] },
+    { "id": "end_bad", "actions": [] }
+  ]
 }
