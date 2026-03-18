@@ -1,29 +1,81 @@
 {
+    "characters": [
+    {
+      "id": "investigator_1",
+      "name": "Detective Ruiz",
+      "skills": {
+        "spot_hidden": 60,
+        "psychology": 40
+      }
+    },
+    {
+      "id": "investigator_2",
+      "name": "Dr. Alvarez",
+      "skills": {
+        "spot_hidden": 30,
+        "psychology": 70
+      }
+    }
+    ],
     "scenes": [
         {
-            "id": "start",
-            "actions": [
+        "id": "start",
+        "actions": [
+            {
+            "id": "inspect_room",
+            "skillCheck": {
+                "skill": "spot_hidden",
+                "difficulty": "normal"
+            },
+            "next": [
                 {
-                    "id": "inspect",
-                    "effects": [
-                        { "type": "add_flag", "flag": "found" }
-                    ],
-                    "next": [
-                        {
-                            "condition": {
-                                "type": "flag",
-                                "flag": "found",
-                                "value": true
-                            },
-                            "sceneId": "next"
-                        }
-                    ]
+                "condition": { "type": "roll_success" },
+                "sceneId": "clue_found"
+                },
+                {
+                "condition": { "type": "roll_failure" },
+                "sceneId": "nothing_found"
                 }
             ]
+            }
+        ]
         },
         {
-            "id": "next",
-            "actions": []
+        "id": "clue_found",
+        "actions": [
+            {
+            "id": "take_clue",
+            "effects": [
+                { "type": "add_flag", "flag": "has_clue" }
+            ],
+            "next": [
+                {
+                "condition": {
+                    "type": "has_flag",
+                    "flag": "has_clue"
+                },
+                "sceneId": "end_good"
+                }
+            ]
+            }
+        ]
+        },
+        {
+        "id": "nothing_found",
+        "actions": [
+            {
+            "id": "retry",
+            "next": [
+                {
+                "sceneId": "start"
+                }
+            ]
+            }
+        ]
+        },
+        {
+        "id": "end_good",
+        "actions": []
         }
     ]
 }

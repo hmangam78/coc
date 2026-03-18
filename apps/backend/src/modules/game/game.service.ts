@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common"
+import { BadRequestException } from "@nestjs/common"
 import { GameEngine } from "@coc/engine"
 import { GameState } from "@coc/types"
 import { v4 as uuid } from "uuid"
@@ -18,7 +19,6 @@ type Session = {
 @Injectable()
 export class GameService {
     private sessions = new Map<string, Session>
-    private engine = new GameEngine(scenarioJson as any)
 
     createSession(): string {
         const sessionId = uuid()
@@ -36,29 +36,49 @@ export class GameService {
 
     joinSession(sessionId: string) {
         const session = this.sessions.get(sessionId)
-        if (!session) throw new Error("Session not found")
+        if (!session) throw new BadRequestException("Session not found")
 
-            const playerId = uuid()
+        const playerId = uuid()
 
-            session.players.push({ id: playerId })
+        //Get available characters
+        const state = session.engine.getState()
 
-            return { playerId }
+        const assignedCharacterIds = new Set(
+            session.players
+                .map(p => p.characterId)
+                .filter(Boolean)
+        )
+
+        const availableCharacter = Object.values(state.characters).find(
+            c => !assignedCharacterIds.has(c.id)
+        )
+
+        if (!availableCharacter) {
+            throw new BadRequestException("No available characters")
+        }
+
+        session.players.push({
+            id: playerId,
+            characterId: availableCharacter.id
+        })
+
+        return { playerId, characterId: availableCharacter.id }
     }
 
     getState(sessionId: string): GameState {
         const session = this.sessions.get(sessionId)
-        if (!session) throw new Error("Session not found")
+        if (!session) throw new BadRequestException("Session not found")
 
         return session.engine.getState()
     }
 
     dispatch(sessionId: string, playerId: string, actionId: string): GameState {
         const session = this.sessions.get(sessionId)
-        if (!session) throw new Error("Session not found")
+        if (!session) throw new BadRequestException("Session not found")
 
         const player = session.players.find(p => p.id === playerId)
         if (!player || !player.characterId) {
-            throw new Error("Player has no character")
+            throw new BadRequestException("Player has no character")
         }
 
         return session.engine.dispatch(actionId, player.characterId)

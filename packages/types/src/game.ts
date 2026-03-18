@@ -7,6 +7,7 @@ export type GameState = {
 
 export type Character = {
     id: string
+    name?: string
     skills: Record<string, number>
     inventory?: string[]
 }

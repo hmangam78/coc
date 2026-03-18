@@ -1,4 +1,4 @@
-import { SkillCheck } from "./game"
+import { SkillCheck, Character } from "./game"
 
 export type Condition =
     | {
@@ -35,5 +35,6 @@ export type Scene = {
 }
 
 export type Scenario = {
+    characters: Character[]
     scenes: Scene[]
 }

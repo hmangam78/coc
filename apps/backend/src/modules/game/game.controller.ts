@@ -24,7 +24,7 @@ export class GameController {
     @Post(":sessionId/action")
     action(
         @Param("sessionId") sessionId: string,
-        @Body() body: { actionId: string }) {
-        return this.gameService.dispatch(sessionId, body.actionId)
+        @Body() body: { playerId: string, actionId: string }) {
+        return this.gameService.dispatch(sessionId, body.playerId, body.actionId)
     }
 }

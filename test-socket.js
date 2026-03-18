@@ -1,22 +1,20 @@
 const { io } = require("socket.io-client")
 
-// 🔹 cambia esto si tu backend usa otro puerto
 const URL = "http://localhost:3000"
-
-// 🔹 pega aquí el sessionId que creaste con curl
-const SESSION_ID = "PEGA_AQUI_TU_SESSION_ID"
-
-// Cliente 1
-const client1 = io(URL)
-
-// Cliente 2
-const client2 = io(URL)
+const SESSION_ID = "820ffe00-5924-4d54-b910-b79096fc532a"
 
 // ---- CLIENTE 1 ----
+const client1 = io(URL)
+
+let player1Id = null
+
 client1.on("connect", () => {
   console.log("Client1 connected")
 
-  client1.emit("join", { sessionId: "d76575d9-fe99-4a20-8c2e-bbe6d779e012" })
+  client1.emit("join", { sessionId: SESSION_ID }, (response) => {
+    console.log("Client1 joined:", response)
+    player1Id = response?.playerId
+  })
 })
 
 client1.on("state_update", (state) => {
@@ -24,19 +22,28 @@ client1.on("state_update", (state) => {
 })
 
 // ---- CLIENTE 2 ----
+const client2 = io(URL)
+
+let player2Id = null
+
 client2.on("connect", () => {
   console.log("Client2 connected")
 
-  client2.emit("join", { sessionId: "d76575d9-fe99-4a20-8c2e-bbe6d779e012" })
+  client2.emit("join", { sessionId: SESSION_ID }, (response) => {
+    console.log("Client2 joined:", response)
+    player2Id = response?.playerId
 
-  // después de 2 segundos, hace acción
-  setTimeout(() => {
-    console.log("Client2 sending action...")
-    client2.emit("action", {
-      sessionId: "d76575d9-fe99-4a20-8c2e-bbe6d779e012",
-      actionId: "inspect"
-    })
-  }, 2000)
+    // después de 2 segundos, hace acción
+    setTimeout(() => {
+      console.log("Client2 sending action...")
+
+      client2.emit("action", {
+        sessionId: SESSION_ID,
+        actionId: "inspect_room", // usa el id nuevo
+        playerId: player2Id
+      })
+    }, 2000)
+  })
 })
 
 client2.on("state_update", (state) => {

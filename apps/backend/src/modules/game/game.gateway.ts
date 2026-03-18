@@ -27,11 +27,16 @@ export class GameGateway {
     ) {
         const { sessionId } = data
 
+        const result = this.gameService.joinSession(sessionId)
+
         client.join(sessionId)
 
         const state = this.gameService.getState(sessionId)
 
-        return state
+        return {
+            ...result,
+            state
+        }
     }
     
     //Player action
