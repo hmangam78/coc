@@ -6,6 +6,7 @@ import scenarioJson from "../../../../../scenarios/test.json"
 
 type Player = {
     id: string
+    characterId?: string
 }
 
 type Session = {
@@ -51,10 +52,15 @@ export class GameService {
         return session.engine.getState()
     }
 
-    dispatch(sessionId: string, actionId: string): GameState {
+    dispatch(sessionId: string, playerId: string, actionId: string): GameState {
         const session = this.sessions.get(sessionId)
         if (!session) throw new Error("Session not found")
 
-        return session.engine.dispatch(actionId)
+        const player = session.players.find(p => p.id === playerId)
+        if (!player || !player.characterId) {
+            throw new Error("Player has no character")
+        }
+
+        return session.engine.dispatch(actionId, player.characterId)
     }
 }

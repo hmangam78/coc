@@ -1,9 +1,17 @@
+import { SkillCheck } from "./game"
+
 export type Condition =
     | {
         type: "flag"
         flag: string
         value: boolean
-    }
+      }
+    | {
+        type: "roll_success"
+      }
+    | {
+        type: "roll_failure"
+      }
 
 export type Effect =
     | {
@@ -18,6 +26,7 @@ export type Action = {
         condition?: Condition
         sceneId: string
     }[]
+    skillCheck?: SkillCheck
 }
 
 export type Scene = {

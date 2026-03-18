@@ -1,6 +1,6 @@
 import { Scenario, GameState } from "@coc/types"
 import { createInitialState } from "./state"
-import { resolveAction } from "./systems/narrative.system"
+import { resolveAction } from "./systems/narrative/narrative.system"
 
 export class GameEngine {
     private state: GameState
@@ -15,8 +15,8 @@ export class GameEngine {
         return this.state
     }
 
-    dispatch(actionId: string) {
-        this.state = resolveAction(this.scenario, this.state, actionId)
+    dispatch(actionId: string, characterId: string) {
+        this.state = resolveAction(this.scenario, this.state, actionId, characterId)
         return this.state
     }
 }

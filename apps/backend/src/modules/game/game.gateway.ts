@@ -37,12 +37,12 @@ export class GameGateway {
     //Player action
     @SubscribeMessage("action")
     handleAction(
-        @MessageBody() data: { sessionId: string, actionId: string },
+        @MessageBody() data: { sessionId: string, actionId: string, playerId: string },
         @ConnectedSocket() client: Socket
     ) {
-        const { sessionId, actionId } = data
+        const { sessionId, actionId, playerId } = data
     
-        const state = this.gameService.dispatch(sessionId, actionId)
+        const state = this.gameService.dispatch(sessionId, playerId, actionId)
     
         //Broadcast to all the players in the session
         this.server.to(sessionId).emit("state_update", state)
