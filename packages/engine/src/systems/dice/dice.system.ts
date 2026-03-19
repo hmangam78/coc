@@ -1,12 +1,18 @@
 import type { GameState, RollResult } from "@coc/types"
 
+export type D100Roller = () => number
+
+export const defaultD100Roller: D100Roller = () =>
+    Math.floor(Math.random() * 100) + 1
+
 export function resolveSkillCheck(
     state: GameState,
     characterId: string,
     skill: string,
-    difficulty: "normal" | "hard" | "extreme" = "normal"
+    difficulty: "normal" | "hard" | "extreme" = "normal",
+    d100Roller: D100Roller = defaultD100Roller
 ): RollResult {
-    const roll = rollD100()
+    const roll = rollD100(d100Roller)
 
     const character = state.characters[characterId]
     if (!character) {
@@ -32,6 +38,6 @@ export function resolveSkillCheck(
     }
 }
 
-export function rollD100(): number {
-    return Math.floor(Math.random() * 100) + 1
+export function rollD100(d100Roller: D100Roller = defaultD100Roller): number {
+    return d100Roller()
 }

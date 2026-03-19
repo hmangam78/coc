@@ -368,6 +368,16 @@ function App() {
           ))}
       </ul>
 
+      <h2>Vars (debug)</h2>
+      <ul>
+        {state?.vars &&
+          Object.entries(state.vars).map(([k, v]) => (
+            <li key={k}>
+              {k}: {String(v)}
+            </li>
+          ))}
+      </ul>
+
       <h2>Jugadores</h2>
       <ul>
         {state?.players?.map((p) => (

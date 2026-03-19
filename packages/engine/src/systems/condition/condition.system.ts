@@ -7,7 +7,36 @@ export function evaluateCondition(
 ): boolean {
     switch (condition.type) {
         case "flag":
-            return state.flags[condition.flag] === condition.value
+            return (state.flags[condition.flag] ?? false) === condition.value
+
+        case "has_item": {
+            const character = state.characters[characterId]
+            if (!character) return false
+            const inventory = character.inventory ?? []
+            const has = inventory.includes(condition.item)
+            return has === condition.value
+        }
+
+        case "var": {
+            const current = state.vars[condition.name] ?? 0
+            const target = condition.value
+            switch (condition.op) {
+                case "==":
+                    return current === target
+                case "!=":
+                    return current !== target
+                case ">=":
+                    return current >= target
+                case "<=":
+                    return current <= target
+                case ">":
+                    return current > target
+                case "<":
+                    return current < target
+                default:
+                    return false
+            }
+        }
 
         case "roll_success":
             return state.lastRollByCharacterId[characterId]?.success === true

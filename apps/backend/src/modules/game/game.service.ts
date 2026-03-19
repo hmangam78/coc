@@ -251,6 +251,7 @@ export class GameService {
         const visibleState: VisibleGameStateV1 = {
             sceneId,
             flags: state.flags,
+            vars: state.vars,
             character: state.characters[player.characterId],
             lastRoll,
             players: [...session.players.values()].map(p => ({

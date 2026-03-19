@@ -1,0 +1,179 @@
+{
+  "characters": [
+    {
+      "id": "investigator_1",
+      "name": "Investigador/a de Prueba",
+      "attributes": {
+        "str": 50,
+        "pow": 50,
+        "edu": 60
+      },
+      "skills": {
+        "listen": 50,
+        "spot_hidden": 50,
+        "occult": 40
+      },
+      "inventory": []
+    }
+  ],
+  "globalActions": [
+    {
+      "id": "take_a_break",
+      "label": "Tomarte un respiro",
+      "availableWhen": [
+        { "type": "var", "name": "focus", "op": "==", "value": 0 }
+      ],
+      "text": "Respiras hondo. El corazón deja de correr un poco.",
+      "effects": [
+        { "type": "set_var", "name": "focus", "value": 1 }
+      ]
+    },
+    {
+      "id": "study_book",
+      "label": "Estudiar el libro",
+      "availableWhen": [
+        { "type": "has_item", "item": "mysterious_book", "value": true },
+        { "type": "flag", "flag": "know_what_to_look_for", "value": true },
+        { "type": "flag", "flag": "book_studied", "value": false }
+      ],
+      "text": "Revisas el libro con una nueva mirada. Algunas frases ya no parecen inocentes.",
+      "effects": [
+        { "type": "set_flag", "flag": "book_studied", "value": true },
+        { "type": "inc_var", "name": "clues", "delta": 1 },
+        { "type": "inc_var", "name": "time", "delta": 1 }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "intro",
+      "text": "Esta partida de test está diseñada para probar: acciones disponibles/ocultas, global actions, inventario, flags y variables.",
+      "actions": [
+        {
+          "id": "enter_room",
+          "label": "Entrar en la sala",
+          "text": "Cruzas el umbral. El olor a polvo y madera vieja te recibe.",
+          "next": [{ "sceneId": "study_room" }]
+        }
+      ]
+    },
+    {
+      "id": "study_room",
+      "text": "Una sala de estudio: un escritorio, un cuadro torcido y marcas en el suelo. Puedes investigar varias cosas antes de marcharte.",
+      "actions": [
+        {
+          "id": "take_book",
+          "label": "Coger el libro extraño",
+          "availableWhen": [{ "type": "flag", "flag": "took_book", "value": false }],
+          "text": "Lo guardas con cuidado. No lo abres todavía.",
+          "effects": [
+            { "type": "add_item", "item": "mysterious_book" },
+            { "type": "add_flag", "flag": "took_book" }
+          ],
+          "next": [{ "sceneId": "study_room" }]
+        },
+        {
+          "id": "inspect_footprints",
+          "label": "Examinar las huellas",
+          "availableWhen": [{ "type": "flag", "flag": "footprints_done", "value": false }],
+          "text": "Hay huellas recientes. Alguien estuvo aquí después de que la casa quedase vacía.",
+          "effects": [
+            { "type": "set_flag", "flag": "footprints_done", "value": true },
+            { "type": "inc_var", "name": "clues", "delta": 1 },
+            { "type": "inc_var", "name": "time", "delta": 1 }
+          ],
+          "next": [{ "sceneId": "study_room" }]
+        },
+        {
+          "id": "inspect_painting",
+          "label": "Examinar el cuadro",
+          "availableWhen": [{ "type": "flag", "flag": "painting_done", "value": false }],
+          "text": "Detrás del marco hay una anotación: “Busca las repeticiones”. Ya sabes qué buscar en el libro.",
+          "effects": [
+            { "type": "set_flag", "flag": "painting_done", "value": true },
+            { "type": "set_flag", "flag": "know_what_to_look_for", "value": true },
+            { "type": "inc_var", "name": "clues", "delta": 1 },
+            { "type": "inc_var", "name": "time", "delta": 1 }
+          ],
+          "next": [{ "sceneId": "study_room" }]
+        },
+        {
+          "id": "search_desk",
+          "label": "Registrar el escritorio",
+          "availableWhen": [{ "type": "flag", "flag": "desk_done", "value": false }],
+          "skillCheck": { "skill": "spot_hidden", "difficulty": "normal" },
+          "next": [
+            {
+              "condition": { "type": "roll_success" },
+              "sceneId": "study_room",
+              "text": "Encuentras una nota con tres números subrayados. Otra pista."
+            },
+            {
+              "condition": { "type": "roll_failure" },
+              "sceneId": "study_room",
+              "text": "Tus dedos sólo encuentran polvo y papeles inútiles."
+            }
+          ],
+          "effects": [
+            { "type": "set_flag", "flag": "desk_done", "value": true },
+            { "type": "inc_var", "name": "time", "delta": 1 }
+          ]
+        },
+        {
+          "id": "leave_room",
+          "label": "Marcharte a la siguiente sala",
+          "text": "Decides continuar. Puede que vuelvas después… o puede que no haya tiempo.",
+          "next": [
+            {
+              "condition": { "type": "var", "name": "clues", "op": ">=", "value": 2 },
+              "sceneId": "hall_with_clues",
+              "text": "Sales con la sensación de que has reunido suficientes piezas para empezar a encajar el puzzle."
+            },
+            {
+              "sceneId": "hall_no_clues",
+              "text": "Sales con más preguntas que respuestas."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hall_no_clues",
+      "text": "El pasillo se alarga en silencio. Sin pistas claras, cualquier decisión parece un salto al vacío.",
+      "actions": [
+        {
+          "id": "go_back",
+          "label": "Volver a la sala de estudio",
+          "next": [{ "sceneId": "study_room" }]
+        },
+        {
+          "id": "end",
+          "label": "Terminar (fin de test)",
+          "next": [{ "sceneId": "end" }]
+        }
+      ]
+    },
+    {
+      "id": "hall_with_clues",
+      "text": "En el pasillo, con algunas pistas, empiezas a ver patrones. Aquí puedes probar una acción global (estudiar el libro).",
+      "actions": [
+        {
+          "id": "go_back",
+          "label": "Volver a la sala de estudio",
+          "next": [{ "sceneId": "study_room" }]
+        },
+        {
+          "id": "end",
+          "label": "Terminar (fin de test)",
+          "next": [{ "sceneId": "end" }]
+        }
+      ]
+    },
+    {
+      "id": "end",
+      "text": "Fin. Has probado mecánicas de P4: disponibilidad, global actions, inventario, flags y variables.",
+      "actions": []
+    }
+  ]
+}
+

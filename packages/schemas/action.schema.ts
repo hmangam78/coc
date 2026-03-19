@@ -18,6 +18,7 @@ export const ActionSchema: z.ZodType<Action> = z.object({
     id: z.string().min(1),
     label: z.string().min(1).optional(),
     text: z.string().min(1).optional(),
+    availableWhen: z.array(ConditionSchema).optional(),
     effects: z.array(EffectSchema).optional(),
     next: z.array(NextSchema).optional(),
     skillCheck: SkillCheckSchema.optional()

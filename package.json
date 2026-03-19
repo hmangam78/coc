@@ -9,6 +9,8 @@
     "clean": "pnpm -r --filter \"./packages/**\" clean && pnpm -r --filter \"./apps/**\" clean",
     "dev": "pnpm -r --filter \"./packages/**\" build && pnpm --filter backend start:dev",
     "dev:front": "pnpm -r --filter \"./packages/**\" build && pnpm --filter frontend dev",
+    "smoke:socket": "node scripts/smoke-socket.js",
+    "test:engine": "pnpm --filter @coc/engine test",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

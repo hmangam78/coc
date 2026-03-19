@@ -17,6 +17,7 @@ export function createInitialState(scenario: Scenario): GameState {
     return {
         sceneByCharacterId,
         flags: {},
+        vars: {},
         characters,
         lastRollByCharacterId: {}
     }

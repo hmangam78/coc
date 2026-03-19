@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "pnpm --filter @coc/types build && pnpm build && node --test test/*.test.js"
   },
   "keywords": [],
   "author": "",

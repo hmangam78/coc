@@ -1,3 +1,3 @@
 #!/bin/bash
-cd apps/frontend/
-pnpm dev
+pnpm -r --filter "./packages/**" build
+pnpm --filter frontend dev

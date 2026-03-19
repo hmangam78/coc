@@ -1,13 +1,24 @@
-import type { Scenario, GameState, RollResult, DispatchResult, GameEvent } from "@coc/types"
+import type { Scenario, GameState, RollResult, DispatchResult, GameEvent, Condition } from "@coc/types"
 import { applyEffect } from "../effects/effect.system"
 import { evaluateCondition } from "../condition/condition.system"
 import { resolveSkillCheck } from "../dice/dice.system"
+import type { D100Roller } from "../dice/dice.system"
+
+type HasAvailability = {
+    availableWhen?: Condition[]
+}
+
+function isActionAvailable(action: HasAvailability, state: GameState, characterId: string) {
+    if (!action.availableWhen || action.availableWhen.length === 0) return true
+    return action.availableWhen.every(c => evaluateCondition(c, state, characterId))
+}
 
 export function resolveAction(
     scenario: Scenario,
     state: GameState,
     actionId: string,
-    characterId: string
+    characterId: string,
+    d100Roller?: D100Roller
 ): DispatchResult {
     const events: GameEvent[] = []
     const currentSceneId = state.sceneByCharacterId[characterId]
@@ -19,9 +30,15 @@ export function resolveAction(
 
     if (!scene) throw new Error(`Scene not found: ${currentSceneId}`)
 
-    const action = scene.actions.find(a => a.id === actionId)
+    const action =
+        scene.actions.find(a => a.id === actionId) ??
+        scenario.globalActions?.find(a => a.id === actionId)
 
     if (!action) throw new Error(`Action not found: ${actionId}`)
+
+    if (!isActionAvailable(action, state, characterId)) {
+        throw new Error(`Action not available: ${actionId}`)
+    }
 
     const fromSceneId = currentSceneId
 
@@ -38,7 +55,8 @@ export function resolveAction(
             state,
             characterId,
             action.skillCheck.skill,
-            difficulty
+            difficulty,
+            d100Roller
         )
 
         events.push({
@@ -62,7 +80,7 @@ export function resolveAction(
     // Apply effects
     if (action.effects) {
         for (const effect of action.effects) {
-            state = applyEffect(effect, state)
+            state = applyEffect(effect, state, characterId)
             events.push({ type: "effect_applied", effect })
         }
     }

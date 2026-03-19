@@ -63,6 +63,7 @@ export type SceneViewV1 = {
 export type VisibleGameStateV1 = {
     sceneId: string
     flags: Record<string, boolean>
+    vars: Record<string, number>
     character: Character
     lastRoll?: RollResult
     players: {

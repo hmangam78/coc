@@ -1,6 +1,7 @@
 export type GameState = {
     sceneByCharacterId: Record<string, string>
     flags: Record<string, boolean>
+    vars: Record<string, number>
     characters: Record<string, Character>
     lastRollByCharacterId: Record<string, RollResult | undefined>
 }
