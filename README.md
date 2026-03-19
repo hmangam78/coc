@@ -35,6 +35,10 @@ Opciones:
 
 - `node scripts/smoke-socket.js --url http://localhost:3000 --scenario test --action enter_house --players 2`
 
+## Manual de escenarios
+
+`SCENARIO_MANUAL.md`
+
 ## Variables de entorno (backend)
 
 - `PORT` (default `3000`)
@@ -49,4 +53,3 @@ Opciones:
 - `pnpm dev` (build packages + backend dev)
 - `pnpm dev:front` (build packages + frontend dev)
 - `pnpm smoke:socket`
-
